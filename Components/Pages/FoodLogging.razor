@@ -61,9 +61,35 @@
     </div>
 </div>
 
+<div class="d-sm-flex justify-content-md-evenly">
 <div class="piechart"></div>
+    <button type="button" class="btn btn-primary align-self-md-end">Enter</button>
+</div>
 
 
+    <label>Manual Entry</label>
+    <div class="form-floating textbox">
+        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+        <label for="floatingTextarea">Food</label>
+    </div>
+
+    <div class="form-floating textbox">
+        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+        <label for="floatingTextarea">Serving Size</label>
+    </div>
+
+    <div class="form-floating textbox">
+        <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
+        <label for="floatingTextarea">Calories</label>
+    </div>
+
+@*Wraps the enter and the dieting advice button onto the same row using the appropriate
+    bootstrap class.
+*@
+<div class="d-sm-flex justify-content-between">
+<button type="button" class="btn btn-secondary">Enter</button>
+<button type="button" class="btn btn-info">Dieting advice</button>
+</div>
 
 @code {
 

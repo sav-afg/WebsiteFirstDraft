@@ -3,5 +3,12 @@
     height: 200px;
     border-radius: 50%;
     background-image: conic-gradient( pink 70deg, lightblue 0 235deg, orange 0 );
+    margin: 10px;
+    padding: 10px;
+    display: flex;
+   justify-content: center;
 }
 
+.textbox {
+    margin: 10px auto;
+}
