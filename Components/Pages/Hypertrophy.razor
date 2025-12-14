@@ -1,9 +1,9 @@
-﻿@page "/exerciselogging"
+﻿@page "/hypertrophy"
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 
-@*Imported from food logging page.*@
-<h3>ExerciseLogging</h3>
+@*Imported from Exercise logging page.*@
+<h3>Hypertrophy</h3>
 <link rel="stylesheet " href="~/customcsspages/FoodLogging.css" />
 
 
@@ -30,7 +30,7 @@
 <div class="container-fluid">
     <div class="row d-flex align-items-stretch">
 
-      
+
         <div class="col-sm-10 d-flex">
             <ul class="list-group w-100">
                 <li class="list-group-item">An item</li>
@@ -41,7 +41,7 @@
             </ul>
         </div>
 
-        
+
         <div class="col-sm-2 d-flex flex-column">
 
             <div class="flex-grow-1 mb-2">
@@ -50,14 +50,10 @@
                 </div>
             </div>
 
-            <div class="flex-grow-3 mb-2">
-                <textarea class="form-control w-100 h-100"
-                          placeholder="Input Exercise Duration"></textarea>
-            </div>
 
-            <div class="flex-grow-1 d-flex">
+            <div class="flex-grow-2 d-flex">
                 <button type="button" class="btn btn-primary w-100 h-100">
-                    Enter
+                    Log
                 </button>
             </div>
 
@@ -67,30 +63,32 @@
 </div>
 
 
-
-
+<br />
 <label>Manual Entry</label>
 <div class="form-floating textbox">
     <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
     <label for="floatingTextarea">Exercise</label>
 </div>
 
-<div class="form-floating textbox">
-    <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
-    <label for="floatingTextarea">Duration</label>
-</div>
 
-<div class="form-floating textbox">
-    <textarea class="form-control" placeholder="Leave a comment here" id="floatingTextarea"></textarea>
-    <label for="floatingTextarea">Calories</label>
-</div>
+
 
 @*Wraps the enter and the dieting advice button onto the same row using the appropriate
     bootstrap class.
 *@
 <div class="d-sm-flex justify-content-between">
-    <button type="button" class="btn btn-secondary">Enter</button>
-    <button type="button" class="btn btn-info">Exercise advice</button>
+    <div class="dropdown-center">
+        <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Centered dropdown
+        </button>
+        <ul class="dropdown-menu">
+            <li><a class="dropdown-item" href="#">Sets and Reps</a></li>
+            <li><a class="dropdown-item" href="#">Distance and Time</a></li>
+            <li><a class="dropdown-item" href="#">Speed and Time</a></li>
+        </ul>
+    </div>
+    <button type="button" class="btn btn-secondary">Log</button>
+    <button type="button" class="btn btn-info">Generate a Workout Split</button>
 </div>
 
 
@@ -100,4 +98,7 @@
     {
         NavigationManager.NavigateTo("hypertrophy");
     }
+
+
 }
+
