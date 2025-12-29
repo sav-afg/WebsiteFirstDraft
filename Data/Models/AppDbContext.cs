@@ -9,5 +9,7 @@ namespace WebsiteFirstDraft.Data.Models
             : base(options) { }
 
         public DbSet<ExerciseType> ExerciseTypes => Set<ExerciseType>();
+
+        public DbSet<User> Users => Set<User>();
     }
 }

@@ -25,7 +25,8 @@ namespace WebsiteFirstDraft
 
             builder.Services.AddScoped<DietQuestionnaireState>();
             builder.Services.AddScoped<ExerciseQuestionnaireState>();
-
+            builder.Services.AddScoped<AuthService>();
+            builder.Services.AddScoped<UserSession>();
             builder.Services.AddSingleton<UISettingsService>();
 
             //builder.Services.AddSyncfusionBlazor();

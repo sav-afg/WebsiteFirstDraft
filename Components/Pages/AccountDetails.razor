@@ -1,23 +1,25 @@
 ﻿@page "/accountdetails"
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
+@inject AuthService AuthService
+@inject UserSession Session
+@using WebsiteFirstDraft.Data.Models
 
 <h3>Sign in/Create Account</h3>
 
 <div class="input-group mb-4 blockquote">
-  
-  <input type="text" class="form-control" placeholder="Username" aria-label="Username" />
+    <input @bind="username" type="text" class="form-control" placeholder="Username" aria-label="Username" />
 
 </div>
 
 <div class="input-group mb-4 blockquote ">
 
-    <input type="text" class="form-control" placeholder="Password" aria-label="Password" />
+    <input @bind="password" type="text" class="form-control" placeholder="Password" aria-label="Password" />
 
 </div>
 
 <div class="input-group mb-4 blockquote"  >
-    <button type="button" class="btn btn-primary col-12" @onclick="NavToHomePage">
+    <button type="button" class="btn btn-primary col-12" @onclick="Login">
         Sign in
     </button>
 </div>
@@ -39,4 +41,20 @@
         NavigationManager.NavigateTo("createaccount");
     }
 
+    string username = string.Empty;
+    string password = string.Empty;
+    string errorMessage = string.Empty;
+
+    async Task Login()
+    {
+        if (await AuthService.LoginAsync(username, password))
+        {
+            Session.Username = string.Concat("Welcome:", " ", username);
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            errorMessage = "Invalid login";
+        }
+    }
 }

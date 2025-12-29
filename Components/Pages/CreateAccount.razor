@@ -1,40 +1,150 @@
 ﻿@page "/createaccount"
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
+@inject IConfiguration Configuration
+@using System.ComponentModel.DataAnnotations
+@using System.Security.Cryptography
+@using System.Text
+@using WebsiteFirstDraft.Data.Models
+@inject AppDbContext Db
 
 
 <h3>CreateAccount</h3>
 
-<div class="input-group mb-4 blockquote">
-    <input type="text" class="form-control" placeholder="Username" aria-label="Username" />
-</div>
 
-<div class="input-group mb-4 blockquote ">
-    <input type="text" class="form-control" placeholder="Password" aria-label="Password" />
-</div>
+<EditForm Model="registermyUser" OnValidSubmit="RegisterUser">
+    <DataAnnotationsValidator />
 
-<div class="input-group mb-4 blockquote ">
-    <input type="text" class="form-control" placeholder="Confirm Password"
-        aria-label="Confirm Password" />
-</div>
+    <div class="input-group mb-4 blockquote">
+        <InputText @bind-Value="registermyUser.Username" class="form-control" />
+        <ValidationMessage For="@(() => registermyUser.Username)" />
+    </div>
 
-<div class="input-group mb-4 blockquote ">
-    <input type="email" class="form-control" placeholder="Email"
-           aria-label="Email" />
-</div>
+    <div class="input-group mb-4 blockquote ">
+        <InputText type="password" @bind-Value="registermyUser.Password" class="form-control" />
+        <ValidationMessage For="@(() => registermyUser.Password)" />
+    </div>
 
-<div class="input-group mb-4 blockquote ">
-    <input type="tel" class="form-control" placeholder="Mobile Number (optional)"
-           aria-label="Mobile Number" />
-</div>
+    <div class="input-group mb-4 blockquote ">
+        <InputText type="email" @bind-Value="registermyUser.Email" class="form-control" />
+        <ValidationMessage For="@(() => registermyUser.Email)" />
+    </div>
 
-<div class="input-group mb-4 blockquote">
-    <button type="button" class="btn btn-primary col-12" @onclick="NavToAccountDetails">
-        Create Account
-    </button>
-</div>
+    <div class="input-group mb-4 blockquote ">
+        <InputText type="tel" @bind-Value="registermyUser.Phone" class="form-control" />
+        <ValidationMessage For="@(() => registermyUser.Phone)" />
+    </div>
+
+    <div class="input-group mb-4 blockquote">
+        <button class="btn btn-primary col-12" type="submit">
+            Create Account
+        </button>
+    </div>
+
+</EditForm>
 
 @code {
+
+    /*
+    PSEUDOCODE / PLAN (detailed):
+    1. Extend the form to collect Email and Phone inputs and add validation attributes.
+    2. Add Email and Phone properties to the RegistermyUser DTO to bind form values.
+    3. Create a small symmetric AES helper inside the razor file that:
+       - Obtains an encryption key string from configuration ("Encryption:Key" or "EncryptionKey"),
+         falling back to a development default if not present.
+       - Derives a 32-byte key using SHA256 of the key string.
+       - Encrypts plaintext using AES (random IV) in CBC/PKCS7 mode, concatenating IV + ciphertext,
+         and returns a Base64 string for storage.
+    4. In RegisterUser():
+       - Encrypt Email and Phone with the helper, producing Base64 strings.
+       - Create the User instance with Username, PasswordHash, and set Email and Phone fields
+         to the encrypted Base64 values.
+       - Save to the database and navigate to account details.
+    5. Keep Password hashing as-is using existing PasswordHelper.HashPassword.
+    */
+
+    private RegistermyUser registermyUser = new();
+    private bool success;
+
+    private async Task RegisterUser()
+    {
+        // Encrypt email and phone before storing
+        var encryptedEmail = SymmetricEncryptor.EncryptToBase64(registermyUser.Email ?? string.Empty, Configuration);
+        var encryptedPhone = SymmetricEncryptor.EncryptToBase64(registermyUser.Phone ?? string.Empty, Configuration);
+
+        var user = new User
+        {
+            Username = registermyUser.Username,
+            PasswordHash = PasswordHelper.HashPassword(registermyUser.Password),
+            // store encrypted values into the corresponding fields on the User model
+            Email = encryptedEmail,
+            Phone_Number = encryptedPhone,
+        };
+
+        Db.Users.Add(user);
+        await Db.SaveChangesAsync();
+
+        registermyUser = new();
+        success = true;
+        NavigationManager.NavigateTo("accountdetails");
+    }
+
+    public class RegistermyUser
+    {
+        [Required]
+        public string Username { get; set; } = string.Empty;
+
+        [Required]
+        public string Password { get; set; } = string.Empty;
+
+        [Required]
+        [EmailAddress]
+        public string Email { get; set; } = string.Empty;
+
+        [Phone]
+        public string Phone { get; set; } = string.Empty;
+
+    }
+
+    // Local symmetric encryptor helper - AES CBC with random IV; returns IV + ciphertext as Base64.
+    private static class SymmetricEncryptor
+    {
+        public static string EncryptToBase64(string plainText, IConfiguration config)
+        {
+            if (plainText is null) return string.Empty;
+
+            var keyBytes = GetKeyBytes(config);
+
+            using var aes = Aes.Create();
+            aes.Key = keyBytes;
+            aes.Mode = CipherMode.CBC;
+            aes.Padding = PaddingMode.PKCS7;
+            aes.GenerateIV();
+
+            using var encryptor = aes.CreateEncryptor(aes.Key, aes.IV);
+            var plainBytes = Encoding.UTF8.GetBytes(plainText);
+
+            using var ms = new MemoryStream();
+            // Prepend IV
+            ms.Write(aes.IV, 0, aes.IV.Length);
+            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+            {
+                cs.Write(plainBytes, 0, plainBytes.Length);
+            }
+
+            var combined = ms.ToArray();
+            return Convert.ToBase64String(combined);
+        }
+
+        private static byte[] GetKeyBytes(IConfiguration config)
+        {
+            // Look for configured key; fall back to a development default.
+            var keyString = config["Encryption:Key"] ?? config["EncryptionKey"] ?? "429496729";
+            using var sha = SHA256.Create();
+            return sha.ComputeHash(Encoding.UTF8.GetBytes(keyString));
+        }
+    }
+
     private void NavToAccountDetails()
     {
         NavigationManager.NavigateTo("accountdetails");
