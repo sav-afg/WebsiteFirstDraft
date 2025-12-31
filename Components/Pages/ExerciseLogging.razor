@@ -5,14 +5,13 @@
 @using WebsiteFirstDraft.Data
 @using WebsiteFirstDraft.Data.Models
 @using BlazorBootstrap.Components
-
 @*Imported from food logging page.*@
-<h3>ExerciseLogging</h3>
+<h3 class=text-center>ExerciseLogging</h3>
 <link rel="stylesheet " href="~/customcsspages/FoodLogging.css" />
 
 
-<p class="blockquote ">Welcome to the Exercise Logging Page</p>
-<p class="blockquote ">Here you can search for exercises from our database and add/remove entries</p>
+<p class="blockquote text-center">Welcome to the Exercise Logging Page</p>
+<p class="blockquote text-center">Here you can search for exercises from our database and add/remove entries</p>
 
 
 <div class="container-fluid">
@@ -69,7 +68,7 @@
                         <td>
                             <Button Color="ButtonColor.Success" @onclick="() => Update(exerciseType)">Save</Button>
                             <Button Color="ButtonColor.Danger" @onclick="() => Delete(exerciseType.Id)">Delete</Button>
-                            <Button Color="ButtonColor.Primary">Log Exercise</Button>
+                            <Button Color="ButtonColor.Primary" @onclick="() => OpenPopup(exerciseType)">Log Exercise</Button>
                         </td>
                     </tr>
                 }
@@ -93,7 +92,46 @@
             </tbody>
         </table>
 
+        <Popup @bind-IsVisible="showPopup" Title="Exercise Logging Page">
+            <p>Name of Exercise</p>
+            @*Need to implement a toggle system*@
 
+
+
+            <div class="container">
+
+                @*Duration*@
+                <div class="row align-items-center mb-3">
+                    <div class="col-4 text-end">
+                        <label class="form-label mb-0">Duration (minutes)</label>
+                    </div>
+                    <div class="col-8">
+                        <div class="input-group" style="max-width: 160px;">
+                            @*Minus button*@
+                            <button class="btn btn-outline-secondary" @onclick="DecrementDuration" disabled="@(duration <= 0)">−</button>
+
+                            @*Numeric bound input*@
+                            <input type="number" class="form-control text-center" @bind="duration"/>
+
+                            @*Plus button*@
+                            <button class="btn btn-outline-secondary" @onclick="IncrementDuration">+</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="d-sm-flex justify-content-between">
+                <button type="button" class="btn btn-primary" @onclick="() => DisplayLog(duration)">Log</button>
+                <button type="button" class="btn btn-primary">Graphs</button>
+            </div>
+
+            @if(display)
+            {
+                <br />
+                <p>Do you wish to log @caloriesBurnt burnt calories?</p>
+                <Button Color="ButtonColor.Primary">Confirm</Button>
+            }
+        </Popup>
 
 @*         <div class="col-sm-10 d-flex">
             <ul class="list-group w-100">

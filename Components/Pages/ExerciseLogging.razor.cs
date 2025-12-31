@@ -1,6 +1,9 @@
-﻿using System;
+﻿using BootstrapBlazor.Components;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 using WebsiteFirstDraft.Data.Models;
 
 namespace WebsiteFirstDraft.Components.Pages
@@ -49,7 +52,7 @@ namespace WebsiteFirstDraft.Components.Pages
                 exercise_types.Add(newExerciseType);
 
                 // Optionally log the newly generated Id
-                Console.WriteLine($"Created ExerciseType with Id {newExerciseType.Id}");
+                System.Console.WriteLine($"Created ExerciseType with Id {newExerciseType.Id}");
 
                 // Resets the form by creating a new empty object
                 newExerciseType = new();
@@ -57,7 +60,7 @@ namespace WebsiteFirstDraft.Components.Pages
             catch (Exception ex)
             {
                 // Minimal error handling - log for debugging
-                Console.WriteLine($"Error creating ExerciseType: {ex.Message}");
+                System.Console.WriteLine($"Error creating ExerciseType: {ex.Message}");
             }
         }
 
@@ -73,7 +76,7 @@ namespace WebsiteFirstDraft.Components.Pages
         void Delete(int id)
         {
             // Logs the deletion attempt (useful for debugging)
-            Console.WriteLine($"Deleting {id}");
+            System.Console.WriteLine($"Deleting {id}");
 
             // Finds the exercise type by primary key
             var exerciseType = Db.exercise_types.Find(id);
@@ -124,6 +127,36 @@ namespace WebsiteFirstDraft.Components.Pages
                 default:
                     return string.Empty;
             }
+        }
+
+        private bool showPopup;
+        double caloriesBurnt = 0;
+        string rate = string.Empty;
+
+
+        //Opens the pop up and captures the value of the current exercise calories burnt per minute attribute inside a string.
+        private void OpenPopup(ExerciseType e)
+        {
+            rate = e.CaloriesBurnedPerMinute.ToString(); 
+            showPopup = true;
+
+        }
+
+
+        private double duration = 0;
+
+        private void IncrementDuration() => duration++;
+        private void DecrementDuration() => duration--;
+
+        private bool display;
+
+        //Displays the total number of calories burnt as an integer
+        private async Task DisplayLog(double duration)
+        {
+            caloriesBurnt = double.Parse(rate) * duration;
+            display = true;
+            caloriesBurnt = (int)caloriesBurnt;
+            
         }
     }
 
