@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Remove="Components\Pages\AboutMe\TermsOfService.razor" />
     <Content Remove="Components\Pages\PopupModal.razor" />
     <Content Remove="wwwroot\bootstrap\js\FoodLogging.css" />
     <Content Remove="wwwroot\customcsspages\FoodLogging.css" />
