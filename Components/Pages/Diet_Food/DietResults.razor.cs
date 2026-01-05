@@ -1,4 +1,4 @@
-﻿namespace WebsiteFirstDraft.Components.Pages
+﻿namespace WebsiteFirstDraft.Components.Pages.Diet_Food
 {
     public partial class DietResults
     {

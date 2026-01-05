@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WebsiteFirstDraft.Data.Models;
 
-namespace WebsiteFirstDraft.Components.Pages
+namespace WebsiteFirstDraft.Components.Pages.Exercise
 {
     public partial class ExerciseLogging
     {

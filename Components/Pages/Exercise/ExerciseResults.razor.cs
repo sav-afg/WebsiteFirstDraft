@@ -1,4 +1,4 @@
-﻿namespace WebsiteFirstDraft.Components.Pages
+﻿namespace WebsiteFirstDraft.Components.Pages.Exercise
 {
     public partial class ExerciseResults
     {
