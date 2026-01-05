@@ -137,7 +137,7 @@ namespace WebsiteFirstDraft.Components.Pages
             };
         }
 
-        private void InitialiseDailyCalorieIntakeVsTargetGraph()
+        private async Task InitialiseDailyCalorieIntakeVsTargetGraph()
         {
             // Create initial labels and datasets for the chart
             chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Day"), Datasets = GetDefaultDataSets(1, true, "Calories above/below Target", false) };
@@ -163,6 +163,7 @@ namespace WebsiteFirstDraft.Components.Pages
                     }
                 }
             };
+            await lineChart.UpdateAsync(chartData, lineChartOptions);
         }
 
 
@@ -170,10 +171,9 @@ namespace WebsiteFirstDraft.Components.Pages
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             // If this is the first render, initialize the JS/chart with current data and options
-            if (firstRender)
-            {
-                await lineChart.InitializeAsync(chartData, lineChartOptions);
-            }
+
+            await lineChart.InitializeAsync(chartData, lineChartOptions);
+
             // Call base implementation
             await base.OnAfterRenderAsync(firstRender);
         }

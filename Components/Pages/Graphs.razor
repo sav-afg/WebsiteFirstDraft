@@ -32,7 +32,7 @@
                     Select your graph
                 </strong>
             </label>
-                <EnumInput TEnum="GraphName" @bind-Value="@selectedGraph" />
+                <EnumInput TEnum="GraphName" @bind-Value="@selectedGraph" @onclick="OnGraphSelected" />
 @*             <select class="form-select" @bind="graphname">
                 <option disabled value="">Select an option</option>
 
@@ -70,7 +70,6 @@
 
             </select> *@
         </div>
-
         </div>
     </div>
 </div>
@@ -80,8 +79,31 @@
 @code {
     private int selectedGraph;
     
-}
+    private async Task OnGraphSelected()
+    {
 
+        labelsCount = 7; // Reset labelsCount for new graph
+        datasetsCount = 1; // Reset datasetsCount for new graph
+        selectedGraph = (int)GraphName.BodyweightoverTime;
+
+
+        switch (selectedGraph)
+        {
+            case 0:
+                InitialiseBodyweightOverTimeGraph();
+                break;
+            case 1:
+                InitialiseDailyCalorieIntakeVsTargetGraph();
+                break;
+            default:
+                InitialiseWeightChangePerWeekGraph();
+                break;
+        }
+            await lineChart.UpdateAsync(chartData, lineChartOptions);
+    }
+}
+@* <p>@selectedGraph</p>
+<p>@GraphCategory</p> *@
 
 <br />
 <br />
