@@ -29,19 +29,158 @@
       - Each `ExerciseEntry` subtracts estimated calories burned.
       - Daily target stored on the user profile; progress visualized in UI.
 
-    ## Data model 
-    - `User`:
-      - `Id`, `Email`, `Name`, `DailyCalorieTarget`, `Preferences`
-    - `FoodEntry`:
-      - `Id`, `UserId`, `FoodId`, `Calories`, `Protein`, `Carbs`, `Fat`, `LoggedAt`
-    - `ExerciseEntry`:
-      - `Id`, `UserId`, `ExerciseId`, `EstimatedCaloriesBurned`, `LoggedAt`
-    - `Diet` / `DietOption`:
-      - `Id`, `Name`, `Description`, `MacrosTarget`, `Tags`
-    - `Question` / `Response`:
-      - `QuestionId`, `Text`, `ResponseType`
-      - `Response`: `UserId`, `QuestionId`, `Value`
+    ## Data model
+    <ul>User => Represents an authenticated application user and stores preferences, accessibility settings, and aggregated progress metrics.
+    UserID
+    Username
 
+PasswordHash
+
+EncryptedEmail
+
+EncryptedPhoneNumber
+
+Role
+
+CreatedAt
+
+LoginStreak
+
+Nutrition Tracking
+
+DailyCalories
+
+DailyCarbs
+
+DailyProtein
+
+DailyFat
+
+WeeklyCalories
+
+WeeklyCarbs
+
+WeeklyProtein
+
+WeeklyFat
+
+TotalCalories
+
+Accessibility & UI Preferences
+
+HighContrastMode
+
+DyslexiaFont
+
+ReducedAnimations
+
+LargerTextSize
+
+MinimalInterface
+
+Engagement & Tracking Preferences
+
+TrackingPreferences
+
+VisualRewards
+
+ProgressData
+
+FoodItem
+
+Represents a single food item with macronutrient density values.
+
+FoodId
+
+FoodName
+
+FoodType
+
+CaloriesPerGram
+
+CarbsPerGram
+
+ProteinPerGram
+
+FatPerGram
+
+UserFoodItem
+
+Join entity linking users to food items they have consumed or tracked.
+
+UserFoodItemId
+
+UserId
+
+FoodId
+
+This replaces the conceptual FoodEntry abstraction in your earlier model and reflects a many-to-many relationship.
+
+ExerciseType
+
+Represents a generic exercise category (e.g. cardio, resistance, flexibility).
+
+ExerciseId
+
+ExerciseName
+
+ExerciseType
+
+CaloriesBurntPerMinute
+
+Intensity
+
+HypertrophyExercise
+
+Represents resistance-training exercises with body-part targeting.
+
+HExerciseId
+
+BodyPart
+
+CaloriesBurntPerRep
+
+ExerciseId (FK → ExerciseType)
+
+Graph
+
+Defines visualisation metadata used to display progress and recommendations.
+
+GraphId
+
+GraphCategory
+
+GraphType
+
+FoodItemGraph
+
+Associates food items with visual graph representations.
+
+FoodItemGraphId
+
+FoodId
+
+GraphId
+
+ExerciseGraph
+
+Associates exercises with visual graph representations.
+
+ExerciseGraphId
+
+ExerciseId
+
+GraphId
+
+UserGraph
+
+Tracks which graphs are relevant or enabled for a given user.
+
+UserGraphId
+
+UserId
+
+GraphId
     Files to look for:
     - `Data/ApplicationDbContext.cs`
     - `Models/*` (e.g., `Diet.cs`, `FoodEntry.cs`, `ExerciseEntry.cs`, `User.cs`)
@@ -83,8 +222,8 @@
       - Register services (recommendation engine, repositories) in `Program.cs`.
 
     ## Privacy & Safety
-    - Do not provide prescriptive medical or clinical advice.
-    - Provide general, safe exercise suggestions and prompts to consult healthcare professionals when necessary.
+    - Does not provide prescriptive medical or clinical advice.
+    - Provides general, safe exercise suggestions and prompts to consult healthcare professionals when necessary.
 
 
     ## Contact / More info
