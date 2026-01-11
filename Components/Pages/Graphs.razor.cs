@@ -36,10 +36,12 @@ namespace WebsiteFirstDraft.Components.Pages
         // Reference to the chart component instance (initialised later)
         private LineChart? lineChart = default!;
         private BarChart? barChart = default!;
+        private PieChart? pieChart = default!;
 
         // Configuration options for the charts
         private LineChartOptions? lineChartOptions = default!;
         private BarChartOptions? barChartOptions = default!;
+        private PieChartOptions? pieChartOptions = default!;
 
         // Data model (labels + datasets) for the chart
         private ChartData chartData = default!;
@@ -105,8 +107,20 @@ namespace WebsiteFirstDraft.Components.Pages
                 case 2:
                     InitialiseDailyCalorieIntakeVsTargetGraph();
                     break;
+                case 3:
+                    InitialiseDailyCalorieSurplusorDeficitGraph();
+                    break;
+                case 4:
+                    InitialiseMacroDistributionGraph();
+                    break;
                 case 5:
                     InitialiseDailyMacroIntakeGraph();
+                    break;
+                case 6:
+                    InitialiseCaloriesBurntThroughExerciseGraph();
+                    break;
+                case 7:
+                    InitialiseExerciseTypeFrequencyGraph();
                     break;
                 default:
                     InitialiseWeightChangePerWeekGraph();
@@ -114,13 +128,29 @@ namespace WebsiteFirstDraft.Components.Pages
             }
         }
 
+        // Helper method to determine if the selected graph is a bar chart
+        private bool IsBarChart() => selectedGraph == 3 || selectedGraph == 5 || selectedGraph == 7;
+
+        // Helper method to determine if the selected graph is a pie chart
+        private bool IsPieChart() => selectedGraph == 4;
+
+        // Method to initialize the chart based on the selected graph type
         private async Task InitializeChart()
         {
-            if (selectedGraph == 5)
+
+            // Initialize the appropriate chart type
+            if (IsBarChart())
             {
                 if (barChart != null)
                 {
                     await barChart.InitializeAsync(chartData, barChartOptions);
+                }
+            }
+            else if (IsPieChart())
+            {
+                if (pieChart != null)
+                {
+                    await pieChart.InitializeAsync(chartData, pieChartOptions);
                 }
             }
             else
@@ -132,13 +162,22 @@ namespace WebsiteFirstDraft.Components.Pages
             }
         }
 
+        // Method to update the chart with new data
         private async Task UpdateChart()
         {
-            if (selectedGraph == 5)
+            // Update the appropriate chart type
+            if (IsBarChart())
             {
                 if (barChart != null)
                 {
                     await barChart.UpdateAsync(chartData, barChartOptions);
+                }
+            }
+            else if (IsPieChart())
+            {
+                if (pieChart != null)
+                {
+                    await pieChart.UpdateAsync(chartData, pieChartOptions);
                 }
             }
             else
@@ -152,20 +191,14 @@ namespace WebsiteFirstDraft.Components.Pages
 
         private void InitialiseWeightChangePerWeekGraph()
         {
-            // Create initial labels and datasets for the chart
             chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Week"), Datasets = GetDefaultDataSets(1, true, "Weight Change (kg)", false) };
 
-            // Set default chart options (horizontal index axis, interaction mode, responsive)
-            // and configure Y axis to allow negative values in the range -1 .. 1.
             lineChartOptions = new()
             {
                 IndexAxis = "x",
                 Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
                 Responsive = true,
 
-
-                // Scales configuration to allow negative values on Y axis.
-                // Types used here are consistent with the chart types available in the project.
                 Scales = new Scales
                 {
                     Y = new()
@@ -180,20 +213,14 @@ namespace WebsiteFirstDraft.Components.Pages
 
         private void InitialiseBodyweightOverTimeGraph()
         {
-            // Create initial labels and datasets for the chart
             chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Day"), Datasets = GetDefaultDataSets(1, false, "Body Weight (kg)", true, 0, 200) };
 
-            // Set default chart options (horizontal index axis, interaction mode, responsive)
-            // and configure Y axis to allow negative values in the range -1 .. 1.
             lineChartOptions = new()
             {
                 IndexAxis = "x",
                 Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
                 Responsive = true,
 
-
-                // Scales configuration to allow negative values on Y axis.
-                // Types used here are consistent with the chart types available in the project.
                 Scales = new Scales
                 {
                     Y = new()
@@ -208,20 +235,14 @@ namespace WebsiteFirstDraft.Components.Pages
 
         private void InitialiseDailyCalorieIntakeVsTargetGraph()
         {
-            // Create initial labels and datasets for the chart
             chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Day"), Datasets = GetDefaultDataSets(1, true, "Calories above/below Target", false) };
 
-            // Set default chart options (horizontal index axis, interaction mode, responsive)
-            // and configure Y axis to allow negative values in the range -1 .. 1.
             lineChartOptions = new()
             {
                 IndexAxis = "x",
                 Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
                 Responsive = true,
 
-
-                // Scales configuration to allow negative values on Y axis.
-                // Types used here are consistent with the chart types available in the project.
                 Scales = new Scales
                 {
                     Y = new()
@@ -234,15 +255,99 @@ namespace WebsiteFirstDraft.Components.Pages
             };
         }
 
-        // Initialises a horizontal bar chart showing daily macro intake
+        // Graph Initialisation Method
+        private void InitialiseDailyCalorieSurplusorDeficitGraph()
+        {
+            // Define labels and datasets for the bar chart
+            var labels = new List<string> { "Day 1", "Day 2", "Day 3", "Day 4", "Day 5" };
+            var datasets = new List<IChartDataset>();
+
+            // Create a dataset for daily calorie surplus/deficit
+            var dataset1 = new BarChartDataset()
+            {
+                Label = "Daily Calorie Surplus/Deficit",
+
+                // Positive values indicate surplus, negative values indicate deficit
+                Data = new List<double?> { 250, -180, 70, -120, 310 },
+                BackgroundColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2],
+                    ColorUtility.CategoricalTwelveColors[3],
+                    ColorUtility.CategoricalTwelveColors[4]
+                },
+                BorderColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2],
+                    ColorUtility.CategoricalTwelveColors[3],
+                    ColorUtility.CategoricalTwelveColors[4]
+                },
+                BorderWidth = new List<double> { 0 },
+            };
+            datasets.Add(dataset1);
+
+            chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+            barChartOptions = new BarChartOptions();
+            barChartOptions.Responsive = true;
+            barChartOptions.Interaction = new Interaction { Mode = InteractionMode.Index };
+            barChartOptions.IndexAxis = "x";
+
+            barChartOptions.Scales.X!.Title = new ChartAxesTitle { Text = "Days", Display = true };
+            barChartOptions.Scales.Y!.Title = new ChartAxesTitle { Text = "Calories", Display = true };
+            barChartOptions.Scales.Y!.BeginAtZero = true;
+
+            barChartOptions.Plugins.Legend.Display = true;
+        }
+
+        private void InitialiseMacroDistributionGraph()
+        {
+            // Define labels and datasets for the pie chart
+            var labels = new List<string> { "Carbs", "Protein", "Fats"};
+            var datasets = new List<IChartDataset>();
+
+            // Create a dataset for macro distribution
+            var dataset1 = new PieChartDataset()
+            {
+                Label = "Daily Macro Intake (g)",
+
+                // Data representing grams of each macronutrient
+                Data = new List<double?> { 250, 180, 70 },
+                BackgroundColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderWidth = new List<double> { 0 },
+            };
+            datasets.Add(dataset1);
+
+
+            chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+            pieChartOptions = new();
+            pieChartOptions.Responsive = true;
+            pieChartOptions.Plugins.Title!.Text = "Daily Calorie Budget Accumulator";
+            pieChartOptions.Plugins.Title.Display = true;
+
+            pieChartOptions.Plugins.Legend.Position = "bottom";
+        }
+
         private void InitialiseDailyMacroIntakeGraph()
         {
-
-            // Define labels and datasets for the bar chart
             var labels = new List<string> { "Carbs", "Protein", "Fat" };
             var datasets = new List<IChartDataset>();
 
-            // Create and configure the dataset
             var dataset1 = new BarChartDataset()
             {
                 Label = "Daily Macro Intake (g)",
@@ -263,10 +368,8 @@ namespace WebsiteFirstDraft.Components.Pages
             };
             datasets.Add(dataset1);
 
-            // Assign chart data
             chartData = new ChartData { Labels = labels, Datasets = datasets };
 
-            // Configure bar chart options
             barChartOptions = new BarChartOptions();
             barChartOptions.Responsive = true;
             barChartOptions.Interaction = new Interaction { Mode = InteractionMode.Y };
@@ -278,14 +381,78 @@ namespace WebsiteFirstDraft.Components.Pages
             barChartOptions.Plugins.Legend.Display = true;
         }
 
+        private void InitialiseCaloriesBurntThroughExerciseGraph()
+        {
+            // Define labels and datasets for the line chart, data values between 0 and 1000
+            chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Day"), Datasets = GetDefaultDataSets(1, false, "Calories Burnt (kcal)", true, 0, 1000) };
+
+            lineChartOptions = new()
+            {
+                IndexAxis = "x",
+                Interaction = new Interaction { Mode = InteractionMode.Index, Intersect = false },
+                Responsive = true,
+
+                Scales = new Scales
+                {
+                    Y = new()
+                    {
+                        // Y-axis starts at 0 and goes up to 1000
+                        BeginAtZero = true,
+                        Min = 0,
+                        Max = 1000
+                    }
+                }
+            };
+        }
+
+        private void InitialiseExerciseTypeFrequencyGraph()
+        {
+            // Define labels and datasets for the bar chart
+            var labels = new List<string> { "Cardio", "Strength", "Flexibility" };
+            var datasets = new List<IChartDataset>();
+
+            // Create a dataset for exercise type frequency
+            var dataset1 = new BarChartDataset()
+            {
+                Label = "Exercise Type Frequency",
+
+                //  Data representing frequency of each exercise type
+                Data = new List<double?> { 2, 3, 4 },
+                BackgroundColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderColor = new List<string>
+                {
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderWidth = new List<double> { 0 },
+            };
+            datasets.Add(dataset1);
+
+            chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+            barChartOptions = new BarChartOptions();
+            barChartOptions.Responsive = true;
+            barChartOptions.Interaction = new Interaction { Mode = InteractionMode.Y };
+            barChartOptions.IndexAxis = "y";
+
+            barChartOptions.Scales.X!.Title = new ChartAxesTitle { Text = "Frequency", Display = true };
+            barChartOptions.Scales.Y!.Title = new ChartAxesTitle { Text = "Weeks", Display = true };
+
+            barChartOptions.Plugins.Legend.Display = true;
+        }
+
         #region Data Preparation
 
-        // Create a list of default datasets
         private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets, bool baseline, string label, bool positive, int min = 0, int max = 0)
         {
             var datasets = new List<IChartDataset>();
 
-            // Generate the requested number of random datasets
             for (var index = 0; index < numberOfDatasets; index++)
             {
                 datasets.Add(GetRandomLineChartDataset(label, positive, min, max));
@@ -293,23 +460,18 @@ namespace WebsiteFirstDraft.Components.Pages
 
             if (baseline)
             {
-                // Adds 1 baseline line regardless of the number of datasets
                 datasets.Add(GetBaselineLine());
             }
 
             return datasets;
         }
 
-        // Build a single LineChartDataset with random data and styling
         private LineChartDataset GetRandomLineChartDataset(string label, bool positive, int min = 0, int max = 0)
         {
-            // Select a color from a categorical palette based on datasetsCount
             var c = ColorUtility.CategoricalTwelveColors[datasetsCount].ToColor();
 
-            // Increment the datasets counter (used for labeling and next color)
             datasetsCount += 1;
 
-            // Return a configured dataset with label, random data and appearance settings
             return new LineChartDataset
             {
                 Label = label,
@@ -321,7 +483,6 @@ namespace WebsiteFirstDraft.Components.Pages
             };
         }
 
-        //Generates a line that is horizontal, y = 0
         private LineChartDataset GetBaselineLine()
         {
             var c = ColorUtility.CategoricalTwelveColors[datasetsCount].ToColor();
@@ -337,15 +498,11 @@ namespace WebsiteFirstDraft.Components.Pages
             };
         }
 
-        // Generate a list of random numeric data points matching current label count
-        // Now returns values in the range -1 .. 1.
         private List<double?> GetRandomData()
         {
             var data = new List<double?>();
             for (var index = 0; index < labelsCount; index++)
             {
-                // random.NextDouble() --> [0.0, 1.0)
-                // map to [-1.0, 1.0): (value * 2) - 1
                 data.Add((random.NextDouble() * 2.0) - 1.0);
             }
 
@@ -374,7 +531,6 @@ namespace WebsiteFirstDraft.Components.Pages
             return data;
         }
 
-        // Create a list of default labels using GetNextDataLabel
         private List<string> GetDefaultDataLabels(int numberOfLabels, string time)
         {
             var labels = new List<string>();
@@ -386,13 +542,11 @@ namespace WebsiteFirstDraft.Components.Pages
             return labels;
         }
 
-        // Produce the next sequential label (e.g., "Day 1", "Day 2") and increment label counter
         private string GetNextDataLabel(string time)
         {
             labelsCount += 1;
             return $"{time} {labelsCount}";
         }
-
 
         #endregion Data Preparation
     }
