@@ -33,11 +33,13 @@ namespace WebsiteFirstDraft.Components.Pages
         }
 
         
-        // Reference to the LineChart component instance (initialised later)
-        private LineChart lineChart = default!;
+        // Reference to the chart component instance (initialised later)
+        private LineChart? lineChart = default!;
+        private BarChart? barChart = default!;
 
-        // Configuration options for the line chart
-        private LineChartOptions lineChartOptions = default!;
+        // Configuration options for the charts
+        private LineChartOptions? lineChartOptions = default!;
+        private BarChartOptions? barChartOptions = default!;
 
         // Data model (labels + datasets) for the chart
         private ChartData chartData = default!;
@@ -51,15 +53,46 @@ namespace WebsiteFirstDraft.Components.Pages
         // Random number generator used to create sample data
         private Random random = new();
 
-        //private int graphNumber = 2;
-
         private bool baseline = true;
+
+        private int selectedGraph;
+
+        private int previousGraph = -1;
 
         // Lifecycle method: initialize component state before rendering
         protected override void OnInitialized()
         {
             selectedGraph = (int)GraphName.BodyweightoverTime;
+            InitializeSelectedGraph();
+        }
+
+        // Lifecycle method: runs after component has rendered
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender || previousGraph != selectedGraph)
+            {
+                previousGraph = selectedGraph;
+                await InitializeChart();
+            }
             
+            await base.OnAfterRenderAsync(firstRender);
+        }
+
+        private async Task OnGraphSelected()
+        {
+            InitializeSelectedGraph();
+            StateHasChanged();
+            
+            // Wait for the next render cycle to complete before updating
+            await Task.Delay(100);
+            await UpdateChart();
+        }
+
+        private void InitializeSelectedGraph()
+        {
+            // Reset counters
+            labelsCount = 0;
+            datasetsCount = 0;
 
             switch (selectedGraph)
             {
@@ -67,19 +100,55 @@ namespace WebsiteFirstDraft.Components.Pages
                     InitialiseBodyweightOverTimeGraph();
                     break;
                 case 1:
+                    InitialiseWeightChangePerWeekGraph();
+                    break;
+                case 2:
                     InitialiseDailyCalorieIntakeVsTargetGraph();
-                        break;
+                    break;
+                case 5:
+                    InitialiseDailyMacroIntakeGraph();
+                    break;
                 default:
                     InitialiseWeightChangePerWeekGraph();
                     break;
             }
-
         }
 
-        // Pseudocode
-        // I initialise the Weight Change Per Week graph with default data and options.
-        // I will do the same for the rest of my graphs, and this way i can call the right one based on user selection.
+        private async Task InitializeChart()
+        {
+            if (selectedGraph == 5)
+            {
+                if (barChart != null)
+                {
+                    await barChart.InitializeAsync(chartData, barChartOptions);
+                }
+            }
+            else
+            {
+                if (lineChart != null)
+                {
+                    await lineChart.InitializeAsync(chartData, lineChartOptions);
+                }
+            }
+        }
 
+        private async Task UpdateChart()
+        {
+            if (selectedGraph == 5)
+            {
+                if (barChart != null)
+                {
+                    await barChart.UpdateAsync(chartData, barChartOptions);
+                }
+            }
+            else
+            {
+                if (lineChart != null)
+                {
+                    await lineChart.UpdateAsync(chartData, lineChartOptions);
+                }
+            }
+        }
 
         private void InitialiseWeightChangePerWeekGraph()
         {
@@ -137,7 +206,7 @@ namespace WebsiteFirstDraft.Components.Pages
             };
         }
 
-        private async Task InitialiseDailyCalorieIntakeVsTargetGraph()
+        private void InitialiseDailyCalorieIntakeVsTargetGraph()
         {
             // Create initial labels and datasets for the chart
             chartData = new ChartData { Labels = GetDefaultDataLabels(6, "Day"), Datasets = GetDefaultDataSets(1, true, "Calories above/below Target", false) };
@@ -163,26 +232,53 @@ namespace WebsiteFirstDraft.Components.Pages
                     }
                 }
             };
-            await lineChart.UpdateAsync(chartData, lineChartOptions);
         }
 
-
-        // Lifecycle method: runs after component has rendered
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        // Initialises a horizontal bar chart showing daily macro intake
+        private void InitialiseDailyMacroIntakeGraph()
         {
-            // If this is the first render, initialize the JS/chart with current data and options
 
-            await lineChart.InitializeAsync(chartData, lineChartOptions);
+            // Define labels and datasets for the bar chart
+            var labels = new List<string> { "Carbs", "Protein", "Fat" };
+            var datasets = new List<IChartDataset>();
 
-            // Call base implementation
-            await base.OnAfterRenderAsync(firstRender);
+            // Create and configure the dataset
+            var dataset1 = new BarChartDataset()
+            {
+                Label = "Daily Macro Intake (g)",
+                Data = new List<double?> { 250, 180, 70 },
+                BackgroundColor = new List<string> 
+                { 
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderColor = new List<string> 
+                { 
+                    ColorUtility.CategoricalTwelveColors[0],
+                    ColorUtility.CategoricalTwelveColors[1],
+                    ColorUtility.CategoricalTwelveColors[2]
+                },
+                BorderWidth = new List<double> { 0 },
+            };
+            datasets.Add(dataset1);
+
+            // Assign chart data
+            chartData = new ChartData { Labels = labels, Datasets = datasets };
+
+            // Configure bar chart options
+            barChartOptions = new BarChartOptions();
+            barChartOptions.Responsive = true;
+            barChartOptions.Interaction = new Interaction { Mode = InteractionMode.Y };
+            barChartOptions.IndexAxis = "y";
+
+            barChartOptions.Scales.X!.Title = new ChartAxesTitle { Text = "Grams", Display = true };
+            barChartOptions.Scales.Y!.Title = new ChartAxesTitle { Text = "Macro", Display = true };
+
+            barChartOptions.Plugins.Legend.Display = true;
         }
-
 
         #region Data Preparation
-
-        
-
 
         // Create a list of default datasets
         private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets, bool baseline, string label, bool positive, int min = 0, int max = 0)
@@ -196,8 +292,10 @@ namespace WebsiteFirstDraft.Components.Pages
             }
 
             if (baseline)
-            // Adds 1 baseline line regardless of the number of datasets
-            datasets.Add(GetBaselineLine());
+            {
+                // Adds 1 baseline line regardless of the number of datasets
+                datasets.Add(GetBaselineLine());
+            }
 
             return datasets;
         }
@@ -299,6 +397,24 @@ namespace WebsiteFirstDraft.Components.Pages
         #endregion Data Preparation
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
