@@ -2,7 +2,9 @@
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 @inject AuthService AuthService
-@inject UserSession Session
+@inject UserSessionService Session
+@inject AppDbContext Db
+@using Microsoft.EntityFrameworkCore
 @using WebsiteFirstDraft.Data.Models
 
 <h3>Sign in/Create Account</h3>
@@ -49,7 +51,29 @@
     {
         if (await AuthService.LoginAsync(username, password))
         {
-            Session.Username = string.Concat("Welcome:", " ", username);
+            Session.UserSession.Username = username;
+
+            var user = await Db.Users
+                .FirstOrDefaultAsync(u => EF.Functions.Like(u.Username, username));
+
+            if (user != null)
+            {
+                // Load ALL UI preferences from database
+                Session.UserSession.High_Contrast_Mode = user.High_Contrast_Mode;
+                Session.UserSession.Dyslexia_Friendly_Font = user.Dyslexia_Friendly_Font;
+                Session.UserSession.Reduced_Animations = user.Reduced_Animations;
+                Session.UserSession.Larger_Font_Size = user.Larger_Font_Size;
+                Session.UserSession.Visual_Rewards = user.Visual_Rewards;
+                Session.UserSession.Progress_Data = user.Progress_Data;
+                Session.UserSession.Minimal_Interface = user.Minimal_Interface;
+                Session.UserSession.Tracking_Preferences = user.Tracking_Preferences ?? "";
+                
+                // Load other user data
+                Session.UserSession.Email = user.Email ?? "";
+                Session.UserSession.Phone_Number = user.Phone_Number ?? "";
+                Session.UserSession.Role = user.Role ?? "User";
+            }
+
             NavigationManager.NavigateTo("/");
         }
         else

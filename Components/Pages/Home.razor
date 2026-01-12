@@ -3,12 +3,12 @@
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 @inject UISettingsService UI
-@inject UserSession Session
+@inject UserSessionService Session
 
 
 <PageTitle>HomePage</PageTitle>
 
-<h3>@Session.Username</h3>
+<h3>@Session.UserSession.Username</h3>
 
 <div class="container-fluid text-center">
     <div class="row" style="margin:2%;">

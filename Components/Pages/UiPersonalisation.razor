@@ -1,18 +1,11 @@
 ﻿@page "/UiPersonalisation"
 @using WebsiteFirstDraft.Data.Models
+@using Microsoft.EntityFrameworkCore
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 @inject UISettingsService UIService
-
-@* Pseudocode:
-   - When user clicks "Apply Settings":
-     1. Set `confirmationMessage` to the success text so it appears immediately.
-     2. Call `StateHasChanged()` to ensure the UI updates right away.
-     3. Await 1000ms (1 second) so the message remains visible.
-     4. Clear `confirmationMessage` so it disappears.
-     5. Navigate to the current URI with forceLoad=true to apply settings (optional reload).
-   - Use `async Task` for the event handler instead of `async void`.
-*@
+@inject UserSessionService Session
+@inject AppDbContext Db
 
 @*Title*@
 <h3 class="text-center">Personalise Your Experience</h3>
@@ -114,7 +107,6 @@
 <br />
 
 <p class="text-success">@confirmationMessage</p>
-
 @code {
 
     // Message shown to the user once settings are applied
@@ -123,19 +115,89 @@
     // Called when user clicks "Apply Settings"
     private async Task ApplySettings()
     {
-        // Show confirmation immediately
-        confirmationMessage = "Your preferences have been saved and applied.";
-        StateHasChanged();
+        try
+        {
+            // Update UserSession with UI settings
+            UpdateUserSession();
 
-        // Keep the message visible for 1 second
-        await Task.Delay(1000);
+            // Save to database
+            await SaveToDatabase();
 
-        // Hide the confirmation message
-        confirmationMessage = string.Empty;
-        StateHasChanged();
+            // Show confirmation immediately
+            confirmationMessage = "Your preferences have been saved and applied.";
+            StateHasChanged();
 
-        // Reload the current page to apply settings
-        NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            // Keep the message visible for 1 second
+            await Task.Delay(1000);
+
+            // Hide the confirmation message
+            confirmationMessage = string.Empty;
+
+            // Reload the current page to apply settings
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            confirmationMessage = $"Error saving settings: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    // Update UserSession with values from UIService.Settings
+    private void UpdateUserSession()
+    {
+        Session.UserSession.High_Contrast_Mode = UIService.Settings.HighContrast;
+        Session.UserSession.Dyslexia_Friendly_Font = UIService.Settings.DyslexicFont;
+        Session.UserSession.Reduced_Animations = UIService.Settings.ReduceAnimations;
+        Session.UserSession.Larger_Font_Size = UIService.Settings.LargerTextSize;
+        Session.UserSession.Visual_Rewards = UIService.Settings.EnableGamification;
+        Session.UserSession.Progress_Data = UIService.Settings.ProgressData;
+        Session.UserSession.Minimal_Interface = UIService.Settings.MinimalInterface;
+
+        // Build tracking preferences string from checkboxes
+        var trackingPreferences = new List<string>();
+        if (UIService.Settings.Calories) trackingPreferences.Add("Calories");
+        if (UIService.Settings.Macros) trackingPreferences.Add("Macros");
+        if (UIService.Settings.Exercise) trackingPreferences.Add("Exercise");
+        if (UIService.Settings.WeightTrends) trackingPreferences.Add("WeightTrends");
+        if (UIService.Settings.ShowAdvancedMetrics) trackingPreferences.Add("AdvancedMetrics");
+
+        Session.UserSession.Tracking_Preferences = string.Join(",", trackingPreferences);
+    }
+
+    // Save UserSession settings to the database
+    private async Task SaveToDatabase()
+    {
+        // Validate username exists in session
+        if (string.IsNullOrWhiteSpace(Session.UserSession.Username))
+        {
+            throw new InvalidOperationException("Session username is null or empty");
+        }
+
+        // Find the user in the database by username (case-insensitive)
+        var normalizedUsername = Session.UserSession.Username.ToLower();
+        var user = await Db.Users 
+        // .Use case-insensitive comparison for username
+            .FirstOrDefaultAsync(u => EF.Functions.Like(u.Username, Session.UserSession.Username));
+
+        // Throw an exception if user not found
+        if (user == null)
+        {
+            throw new InvalidOperationException($"User '{Session.UserSession.Username}' not found in database");
+        }
+
+        // Update user database record with session values
+        user.High_Contrast_Mode = Session.UserSession.High_Contrast_Mode;
+        user.Dyslexia_Friendly_Font = Session.UserSession.Dyslexia_Friendly_Font;
+        user.Reduced_Animations = Session.UserSession.Reduced_Animations;
+        user.Larger_Font_Size = Session.UserSession.Larger_Font_Size;
+        user.Visual_Rewards = Session.UserSession.Visual_Rewards;
+        user.Progress_Data = Session.UserSession.Progress_Data;
+        user.Minimal_Interface = Session.UserSession.Minimal_Interface;
+        user.Tracking_Preferences = Session.UserSession.Tracking_Preferences;
+
+        // Save changes to database
+        await Db.SaveChangesAsync();
     }
 
 }

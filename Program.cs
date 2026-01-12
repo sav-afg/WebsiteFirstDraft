@@ -26,7 +26,10 @@ namespace WebsiteFirstDraft
             builder.Services.AddScoped<DietQuestionnaireState>();
             builder.Services.AddScoped<ExerciseQuestionnaireState>();
             builder.Services.AddScoped<AuthService>();
-            builder.Services.AddScoped<UserSession>();
+
+            // Register UserSessionService as a singleton service because it holds user-specific data.
+            builder.Services.AddSingleton<UserSessionService>();
+
             builder.Services.AddSingleton<UISettingsService>();
 
             builder.Services.AddScoped<WorkoutSplitGeneratorState>();
