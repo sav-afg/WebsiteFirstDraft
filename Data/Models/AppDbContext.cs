@@ -12,6 +12,10 @@ namespace WebsiteFirstDraft.Data.Models
 
         public DbSet<User> Users => Set<User>();
 
+    
+        // DbSet representing the food_types table in the database
+        public DbSet<FoodType> Food_items => Set<FoodType>();
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ExerciseType>(entity =>
