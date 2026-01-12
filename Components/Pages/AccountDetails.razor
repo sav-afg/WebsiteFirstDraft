@@ -50,7 +50,7 @@
     async Task Login()
     {
         if (await AuthService.LoginAsync(username, password))
-        {
+        {   
             Session.UserSession.Username = username;
 
             var user = await Db.Users

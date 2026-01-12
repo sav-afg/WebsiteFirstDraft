@@ -1,8 +1,8 @@
 namespace WebsiteFirstDraft.Data.Models
 {
-    /// <summary>
-    /// Seeds the in-memory database with mock data for testing
-    /// </summary>
+
+
+    // Static class to seed the database with mock data
     public static class DatabaseSeeder
     {
         public static void SeedDatabase(AppDbContext context)
@@ -20,6 +20,7 @@ namespace WebsiteFirstDraft.Data.Models
             context.SaveChanges();
         }
 
+        // Seed mock users
         private static void SeedUsers(AppDbContext context)
         {
             var users = new[]
@@ -28,7 +29,7 @@ namespace WebsiteFirstDraft.Data.Models
                 {
                     User_id = 1,
                     Username = "testuser",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("password123"),
+                    PasswordHash = PasswordHelper.HashPassword("password123"),
                     Email = "testuser@example.com",
                     Phone_Number = "555-0001",
                     Role = "User",
@@ -44,7 +45,7 @@ namespace WebsiteFirstDraft.Data.Models
                 {
                     User_id = 2,
                     Username = "admin",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"),
+                    PasswordHash = PasswordHelper.HashPassword("admin123"),
                     Email = "admin@example.com",
                     Phone_Number = "555-0002",
                     Role = "Admin",
@@ -58,7 +59,7 @@ namespace WebsiteFirstDraft.Data.Models
                 {
                     User_id = 3,
                     Username = "johndoe",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("john123"),
+                    PasswordHash = PasswordHelper.HashPassword("john123"),
                     Email = "john@example.com",
                     Phone_Number = "555-0003",
                     Role = "User",
@@ -74,6 +75,7 @@ namespace WebsiteFirstDraft.Data.Models
             context.Users.AddRange(users);
         }
 
+        // Seed mock exercises
         private static void SeedExercises(AppDbContext context)
         {
             var exercises = new[]
@@ -147,6 +149,7 @@ namespace WebsiteFirstDraft.Data.Models
             context.exercise_types.AddRange(exercises);
         }
 
+        // Seed mock food items
         private static void SeedFoods(AppDbContext context)
         {
             var foods = new[]

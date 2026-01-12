@@ -38,7 +38,7 @@ namespace WebsiteFirstDraft
 
             var app = builder.Build();
 
-            // ✅ SEED THE IN-MEMORY DATABASE WITH MOCK DATA
+            // Seed the database with mock data
             using (var scope = app.Services.CreateScope())
             {
                 var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
