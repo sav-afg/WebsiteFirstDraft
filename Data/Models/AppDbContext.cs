@@ -9,39 +9,37 @@ namespace WebsiteFirstDraft.Data.Models
             : base(options) { }
 
         public DbSet<ExerciseType> exercise_types => Set<ExerciseType>();
-
         public DbSet<User> Users => Set<User>();
-
-    
-        // DbSet representing the food_types table in the database
         public DbSet<FoodType> Food_items => Set<FoodType>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            // ExerciseType configuration
             modelBuilder.Entity<ExerciseType>(entity =>
             {
-                entity.ToTable("exercise_types"); // Table name
-
-
-                //Binds the class attributes to the database columns
+                entity.ToTable("exercise_types");
                 entity.HasKey(e => e.Id);
 
-                entity.Property(e => e.Id)
-                      .HasColumnName("exercise_id");
+                entity.Property(e => e.Id).HasColumnName("exercise_id");
+                entity.Property(e => e.ExerciseNames).HasColumnName("exercise_name");
+                entity.Property(e => e.ExerciseTypes).HasColumnName("exercise_type");
+                entity.Property(e => e.CaloriesBurnedPerMinute).HasColumnName("calories_burnt_per_minute");
+                entity.Property(e => e.IntensityLevel).HasColumnName("intensity");
+            });
 
-                entity.Property(e => e.ExerciseNames)
-                      .HasColumnName("exercise_name");
+            // User configuration
+            modelBuilder.Entity<User>(entity =>
+            {
+                entity.ToTable("users");
+                entity.HasKey(u => u.User_id);
+            });
 
-                entity.Property(e => e.ExerciseTypes)
-                      .HasColumnName("exercise_type");
-
-                entity.Property(e => e.CaloriesBurnedPerMinute)
-                      .HasColumnName("calories_burnt_per_minute");
-
-                entity.Property(e => e.IntensityLevel)
-                        .HasColumnName("intensity");
+            // FoodType configuration
+            modelBuilder.Entity<FoodType>(entity =>
+            {
+                entity.ToTable("food_items");
+                entity.HasKey(f => f.Food_Id);
             });
         }
-
     }
 }
