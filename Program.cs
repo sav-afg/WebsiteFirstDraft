@@ -25,6 +25,10 @@ namespace WebsiteFirstDraft
 
             builder.Services.AddScoped<DietQuestionnaireState>();
             builder.Services.AddScoped<ExerciseQuestionnaireState>();
+
+            // Added service for maintenance calorie calculator
+            builder.Services.AddScoped<MaintenanceCalorieCalculator>();
+
             builder.Services.AddScoped<AuthService>();
 
             // Register UserSessionService as a singleton service because it holds user-specific data.

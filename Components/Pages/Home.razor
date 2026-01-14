@@ -162,14 +162,17 @@
         </div>
 
         <hr />
-    <div>
+    
+    @* Questionnaire buttons section with bottom padding to prevent footer overlap *@
+    <div class="mb-5 pb-5">
         <div class="row text-center">
             <div>
                 <p>Not sure where to start? Try out our questionnaires:</p>
-                <div class="d-sm-flex justify-content-between">
-                    <button type="button" class="btn btn-primary" @onclick="NavToDietQuestionnaire">Diet Advice</button>
-                    <button type="button" class="btn btn-primary" @onclick="NavToExerciseQuestionnaire">Exercise advice</button>
-                <button type="button" class="btn btn-primary" @onclick="NavToWorkoutSplitGenerator">Workout Split Generator</button>
+                <div class="d-sm-flex justify-content-between gap-2 flex-wrap">
+                    <button type="button" class="btn btn-primary mb-2" @onclick="NavToDietQuestionnaire">Diet Advice</button>
+                    <button type="button" class="btn btn-primary mb-2" @onclick="NavToExerciseQuestionnaire">Exercise advice</button>
+                    <button type="button" class="btn btn-primary mb-2" @onclick="NavToWorkoutSplitGenerator">Workout Split Generator</button>
+                    <button type="button" class="btn btn-primary mb-2" @onclick="NavToMainCalculator">Maintenance Calories Calculator</button>
                 </div>
             </div>
         </div>
@@ -215,6 +218,11 @@
     private void NavToWorkoutSplitGenerator()
     {
         NavigationManager.NavigateTo("workoutsplitgenerator");
+    }
+
+    private void NavToMainCalculator()
+    {
+        NavigationManager.NavigateTo("maintenancecaloriesquestionnaire");
     }
 
     #endregion
