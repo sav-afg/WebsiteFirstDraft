@@ -2,10 +2,11 @@
 @rendermode InteractiveServer
 @inject NavigationManager NavigationManager
 @inject WebsiteFirstDraft.Data.Models.AppDbContext Db
+@inject UserSessionService Session
 @using WebsiteFirstDraft.Data
 @using WebsiteFirstDraft.Data.Models
 @using BlazorBootstrap.Components
-
+@using Microsoft.EntityFrameworkCore
 <link rel="stylesheet " href="~/customcsspages/FoodLogging.css"/>
 
 <h3 class="text-center">Food Logging</h3>
@@ -125,11 +126,14 @@
                 <button type="button" class="btn btn-primary">Graphs</button>
             </div>
 
+            @*Displays calories and macro count for confirmation*@
             @if (display)
             {
                 <br />
                 <p>Do you wish to log @calories calories?</p>
-                <Button Color="ButtonColor.Primary">Confirm</Button>
+                <p>Macro content (grams): @carbs.ToString("F0") carbs, @protein.ToString("F0") protein, @fat.ToString("F0") fat</p>
+                <Button Color="ButtonColor.Primary" @onclick="LogCalories">Confirm</Button>
+                <p>@errorMessage</p>
             }
         </Popup>
 
@@ -237,13 +241,25 @@
     // Popup related code
     private bool showPopup;
     double caloriesPerGram = 0;
-    double calories = 0;
+    double carbsPerGram = 0;
+    double proteinPerGram = 0;
+    double fatPerGram = 0;
 
+    double calories = 0;
+    double carbs = 0;
+    double protein = 0;
+    double fat = 0;
+
+    private string errorMessage = String.Empty;
 
     //Opens the pop up and captures the value of the current exercise calories burnt per minute attribute inside a string.
     private void OpenPopup(FoodType e)
     {
         caloriesPerGram = e.Calories_Per_Gram;
+        carbsPerGram = e.Carbs_Per_Gram;
+        proteinPerGram = e.Protein_Per_Gram;
+        fatPerGram = e.Fat_Per_Gram;
+
         showPopup = true;
 
     }
@@ -261,8 +277,67 @@
     private async Task DisplayLog(double grams)
     {
         calories = caloriesPerGram * grams;
+        carbs = carbsPerGram * grams;
+        protein = proteinPerGram * grams;
+        fat = fatPerGram * grams;
+
         display = true;
         calories = (int)calories;
+
+    }
+
+    //Logs the total calories burnt to the user session and database
+    private void LogCalories()
+    {
+        //Updates the user session values
+        Session.UserSession.Daily_Calories += (int)calories;
+        Session.UserSession.Weekly_Calories += (int)calories;
+        Session.UserSession.Daily_Carbs += (int)carbs;
+        Session.UserSession.Daily_Protein += (int)protein;
+        Session.UserSession.Daily_Fat += (int)fat;
+        Session.UserSession.Weekly_Carbs += (int)carbs;
+        Session.UserSession.Weekly_Protein += (int)protein;
+        Session.UserSession.Weekly_Fat += (int)fat;
+
+        try
+        {
+            // Updates the database values
+            var user = Db.Users
+    // .Use case-insensitive comparison for username
+    .FirstOrDefault(u => EF.Functions.Like(u.Username, Session.UserSession.Username));
+
+            if (user is null)
+            {
+                errorMessage = "Error: User not found in database.";
+                StateHasChanged();
+                return;
+            }
+
+            user.Daily_Calories = Session.UserSession.Daily_Calories;
+            user.Weekly_Calories = Session.UserSession.Weekly_Calories;
+            user.Daily_Carbs = Session.UserSession.Daily_Carbs;
+            user.Daily_Protein = Session.UserSession.Daily_Protein;
+            user.Daily_Fat = Session.UserSession.Daily_Fat;
+            user.Weekly_Carbs = Session.UserSession.Weekly_Carbs;
+            user.Weekly_Protein = Session.UserSession.Weekly_Protein;
+            user.Weekly_Fat = Session.UserSession.Weekly_Fat;
+
+            Db.SaveChanges();
+
+            errorMessage = "Food logged successfully!";
+            showPopup = false;
+            display = false;
+            grams = 0;
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Error logging food item: {ex.Message}";
+            StateHasChanged();
+        }
+
+
+        
 
     }
 }
