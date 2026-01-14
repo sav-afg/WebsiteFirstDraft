@@ -7,7 +7,7 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0 " />
     <base href="/" />
     <ResourcePreloader />
     <link rel="stylesheet" href="@Assets["app.css"]" />
@@ -27,7 +27,7 @@
 
 <body class=
     "@(UI.Settings.DyslexicFont || Session.UserSession.Dyslexia_Friendly_Font ? "dyslexic-font" : "")
-     @( UI.Settings.HighContrast ||  Session.UserSession.High_Contrast_Mode ? "high-contrast" : "")
+      @( UI.Settings.HighContrast ||  Session.UserSession.High_Contrast_Mode ? "high-contrast" : "") 
      @(UI.Settings.LargerTextSize || Session.UserSession.Larger_Font_Size ? "large-text" : "")">
 
     <Routes />
