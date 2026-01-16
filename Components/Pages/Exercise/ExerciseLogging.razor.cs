@@ -1,4 +1,6 @@
 ﻿using BootstrapBlazor.Components;
+using Microsoft.EntityFrameworkCore;
+using Plotly.NET;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,20 +115,13 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
         // Method that will set the input class as a certain colour based off the value inside the cell
         string IntensityColour(ExerciseType exerciseType)
         {
-            switch (exerciseType.IntensityLevel)
+            return exerciseType.IntensityLevel switch
             {
-                case "Low":
-                    return "faded-green";
-
-                case "Moderate":
-                    return "faded-yellow";
-
-                case "High":
-                    return "faded-red";
-
-                default:
-                    return string.Empty;
-            }
+                "Low" => "faded-green",
+                "Moderate" => "faded-yellow",
+                "High" => "faded-red",
+                _ => string.Empty,
+            };
         }
 
         private bool showPopup;
@@ -144,6 +139,7 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
 
 
         private double duration = 0;
+        private string errorMessage = String.Empty;
 
         private void IncrementDuration() => duration++;
         private void DecrementDuration() => duration--;
@@ -157,6 +153,49 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
             display = true;
             caloriesBurnt = (int)caloriesBurnt;
             
+        }
+
+        //Logs the total calories burnt to the user session and database
+        private void LogCalories()
+        {
+            //Updates the user session values
+            Session.UserSession.Daily_Calories = (int)caloriesBurnt;
+            Session.UserSession.Weekly_Calories = (int)caloriesBurnt;
+
+            try
+            {
+                // Updates the database values
+                var user = Db.Users
+        // .Use case-insensitive comparison for username
+        .FirstOrDefault(u => EF.Functions.Like(u.Username, Session.UserSession.Username));
+
+                if (user is null)
+                {
+                    errorMessage = "Error: User not found in database.";
+                    StateHasChanged();
+                    return;
+                }
+
+                user.Daily_Calories -= Session.UserSession.Daily_Calories;
+                user.Weekly_Calories -= Session.UserSession.Weekly_Calories;
+
+                Db.SaveChanges();
+
+                errorMessage = "Food logged successfully!";
+                showPopup = false;
+                display = false;
+                StateHasChanged();
+            }
+            // Catches any exceptions that occur during the database update
+            catch (Exception ex)
+            {
+                errorMessage = $"Error logging food item: {ex.Message}";
+                StateHasChanged();
+            }
+
+
+
+
         }
     }
 
