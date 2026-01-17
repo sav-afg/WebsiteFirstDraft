@@ -61,17 +61,22 @@ namespace WebsiteFirstDraft.Components.Pages
 
         private int previousGraph = -1;
 
+        // ✅ Track whether a graph has been loaded
+        private bool isGraphLoaded = false;
+
         // Lifecycle method: initialize component state before rendering
         protected override void OnInitialized()
         {
             selectedGraph = (int)GraphName.BodyweightoverTime;
-            InitializeSelectedGraph();
+            // ✅ Don't initialize graph on page load - wait for user selection
+            // InitializeSelectedGraph();
         }
 
         // Lifecycle method: runs after component has rendered
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            if (firstRender || previousGraph != selectedGraph)
+            // ✅ Only initialize if graph has been explicitly loaded
+            if (isGraphLoaded && (firstRender || previousGraph != selectedGraph))
             {
                 previousGraph = selectedGraph;
                 await InitializeChart();
@@ -83,6 +88,7 @@ namespace WebsiteFirstDraft.Components.Pages
         private async Task OnGraphSelected()
         {
             InitializeSelectedGraph();
+            isGraphLoaded = true; // ✅ Mark graph as loaded
             StateHasChanged();
             
             // Wait for the next render cycle to complete before updating
@@ -551,6 +557,30 @@ namespace WebsiteFirstDraft.Components.Pages
         #endregion Data Preparation
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

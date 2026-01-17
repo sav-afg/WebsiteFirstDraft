@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 
 namespace WebsiteFirstDraft.Data.Models
 {
@@ -27,5 +28,24 @@ namespace WebsiteFirstDraft.Data.Models
         public bool Visual_Rewards { get; set; } = true;
         public bool Progress_Data { get; set; } = true;
         public bool Minimal_Interface { get; set; } = false;
+
+        // New fields
+        public int Body_Weight { get; set; }
+        public int Maintenance_Calories { get; set; }
+
+        public double Daily_Weight_Change { get; set; }
+
+        public double Weekly_Weight_Change { get; set; }
+
+        public int Daily_Calories_Burnt_Through_Exercise { get; set; }
+
+        public int Weekly_Calories_Burnt_Through_Exercise { get; set; }
+
+        public int Daily_Cardio { get; set; }
+        public int Daily_Strength { get; set; }
+        public int Daily_Flexibility { get; set; }
+
+        public DateTime Created_At { get; set; }
+
     }
 }

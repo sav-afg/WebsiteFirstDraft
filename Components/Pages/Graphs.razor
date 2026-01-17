@@ -1,6 +1,8 @@
 ﻿@page "/graphs"
 @using WebsiteFirstDraft.Data.Models
 @rendermode InteractiveServer
+@inject UserSessionService Session
+@inject AppDbContext Db
 
 <br />
 <div class="container-fluid">
@@ -41,21 +43,51 @@
         
 <br />
 <br />
-<div class="container-fluid overflow-x-auto">
-    
 
-    @*Renders the correct type of chart*@
-    @if (IsBarChart())
-    {
-        <BarChart @ref="barChart" Width="800" Height="400" />
-    }
-    else if (IsPieChart())
-    {
-        <PieChart @ref="pieChart" Width="400" Height="400" />
-    }
-    else
-    {
-        <LineChart @ref="lineChart" Width="800" Height="400" />
-    }
+@* Graph Rendering Container *@
+<div class="container-fluid">
+    <div class="card shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">
+                <i class="bi bi-graph-up"></i> Graph Visualization
+            </h5>
+        </div>
+        <div class="card-body">
+            @if (isGraphLoaded)
+            {
+                @* Graph rendering area *@
+                <div class="overflow-x-auto">
+                    @if (IsBarChart())
+                    {
+                        <BarChart @ref="barChart" Width="800" Height="400" />
+                    }
+                    else if (IsPieChart())
+                    {
+                        <PieChart @ref="pieChart" Width="400" Height="400" />
+                    }
+                    else
+                    {
+                        <LineChart @ref="lineChart" Width="800" Height="400" />
+                    }
+                </div>
+            }
+            else
+            {
+                @* Placeholder message when no graph is selected *@
+                <div class="text-center py-5">
+                    <i class="bi bi-bar-chart-line" style="font-size: 4rem; color: #6c757d;"></i>
+                    <h4 class="mt-3 text-muted">No Graph Selected</h4>
+                    <p class="text-muted">
+                        Please select a graph from the dropdown menu above and click 
+                        <strong>"Load Graph"</strong> to visualize your data.
+                    </p>
+                    <div class="alert alert-info mt-3 d-inline-block" role="alert">
+                        <i class="bi bi-info-circle"></i> 
+                        Choose from categories like Bodyweight Progress, Calorie Tracking, Macros, and more!
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
 

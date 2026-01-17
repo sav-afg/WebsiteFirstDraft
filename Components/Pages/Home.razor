@@ -4,7 +4,8 @@
 @rendermode InteractiveServer
 @inject UISettingsService UI
 @inject UserSessionService Session
-
+@inject AppDbContext Db
+@using Microsoft.EntityFrameworkCore
 
 <PageTitle>HomePage</PageTitle>
 
@@ -103,10 +104,18 @@
         <div class="row">
             <div class="col-6">
 
+            @* Pie chart only displays if user is logged in AND has eaten today *@
+            @if (ShouldShowPieChart())
+            {
                 @*Sets up a pie chart with a width property.*@
-            <PieChart @ref="pieChart" Width="300" Height="300" />
-
-
+                <PieChart @ref="pieChart" Width="300" Height="300" />
+            }
+            else
+            {
+                <div class="alert alert-info" role="alert">
+                    <p class="mb-0">No macro data available yet. Start logging your meals!</p>
+                </div>
+            }
 
             </div>
 
@@ -160,7 +169,6 @@
             </div>
             </div>
         </div>
-
         <hr />
     
     @* Questionnaire buttons section with bottom padding to prevent footer overlap *@
@@ -230,98 +238,120 @@
 
     @*Reference to the rendered PieChart component, allowing inbuilt methods to be called
     This class originated from the NuGet package i installed (Blazor Bootstrap)*@
-    private PieChart pieChart = default!;
+    private PieChart? pieChart;
 
     @*Adds configuration options for the chart such as title, legend position, responsiveness*@
-    private PieChartOptions pieChartOptions = default!;
+    private PieChartOptions? pieChartOptions;
 
     @*Another component that holds labels and datasets*@
-    private ChartData chartData = default!;
+    private ChartData? chartData;
 
     @*Stores an array of predefined colours to use for the pie slices*@
     private string[]? backgroundColors;
 
-    @*default! tells the compiler that a value will be assigned to the fields so dont warn about nulls*@
-
-
-    @*Tracks how many datasets have been created*@
-    private int datasetsCount = 0;
-
     @*Tracks how many labels exist which is important for data and colour alignment*@
     private int dataLabelsCount = 0;
 
-    @*Generates random values for demo data. Will eventually use data from a database.*@
-    private Random rnd = new();
+    private bool ShouldShowPieChart()
+    {
+        // Check if user is logged in (username is not empty)
+        bool isLoggedIn = !string.IsNullOrWhiteSpace(Session.UserSession.Username);
 
+        // Check if user has any macro data for today
+        var user = Db.Users
+            .FirstOrDefault(u => EF.Functions.Like(u.Username, Session.UserSession.Username));
+
+        // Returns false if the user isn't found
+        if (user == null)
+            return false;
+
+        // Sync session data with database
+        Session.UserSession.Daily_Carbs = user.Daily_Carbs;
+        Session.UserSession.Daily_Protein = user.Daily_Protein;
+        Session.UserSession.Daily_Fat = user.Daily_Fat;
+
+        bool hasData = user.Daily_Carbs != 0
+                        || user.Daily_Protein != 0
+                        || user.Daily_Fat != 0;
+
+        return isLoggedIn && hasData;
+    }
 
     @*This runs once when the component is created*@
     protected override void OnInitialized()
     {
-
-        @*Loads default colours and creates the charts data alongside 3 labels with 1 dataset containing random values for each label*@
+        @*Loads default colours and creates the chart data with actual user data*@
         backgroundColors = ColorUtility.CategoricalTwelveColors;
-        chartData = new ChartData { Labels = GetDefaultDataLabels(3), Datasets = GetDefaultDataSets(1) };
+        chartData = new ChartData { Labels = GetMacroLabels(), Datasets = GetUserMacroDataSets() };
 
         @*Configures chart options to have a responsive layout, title text and visibility, legend positioned on the bottom*@
         pieChartOptions = new();
         pieChartOptions.Responsive = true;
-        pieChartOptions.Plugins.Title!.Text = "Daily Calorie Budget Accumulator";
+        pieChartOptions.Plugins.Title!.Text = "Daily Macro Breakdown";
         pieChartOptions.Plugins.Title.Display = true;
-
         pieChartOptions.Plugins.Legend.Position = "bottom";
     }
 
     @*Blazor components render before child elements are fully available. firstRender == true ensures the chart is initialised only once*@
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
+        // Only initialize chart if it's rendered AND all required objects are not null
+        if (firstRender && ShouldShowPieChart() && pieChart != null && chartData != null && pieChartOptions != null)
         {
             await pieChart.InitializeAsync(chartData, pieChartOptions);
         }
         await base.OnAfterRenderAsync(firstRender);
     }
 
-    @*This region is used to prepare the data*@
+    @*This region is used to prepare the data from the database*@
     #region Data Preparation
 
 
-    @*Creates a list of datasets with each dataset representing a pie chart series*@
-    private List<IChartDataset> GetDefaultDataSets(int numberOfDatasets)
+    // Creates a list of datasets with actual user macro data from the database
+    private List<IChartDataset> GetUserMacroDataSets()
     {
-        var datasets = new List<IChartDataset>();
-
-        for (var index = 0; index < numberOfDatasets; index++)
+        var datasets = new List<IChartDataset>
         {
-            datasets.Add(GetRandomPieChartDataset());
-        }
+            GetUserMacroPieChartDataset()
+        };
 
         return datasets;
     }
 
-    @*Creates a dataset with a label, random numeric values and matching background colours*@
-    private PieChartDataset GetRandomPieChartDataset()
+
+
+    // Creates a dataset with the logged-in user's actual macro data
+    private PieChartDataset GetUserMacroPieChartDataset()
     {
-        datasetsCount += 1;
-        return new() { Label = "Grams" , Data = GetRandomData(), BackgroundColor = GetRandomBackgroundColors() };
+        return new PieChartDataset
+        {
+            Label = "Grams",
+            Data = GetUserMacroData(),
+            BackgroundColor = GetMacroBackgroundColors()
+        };
     }
 
-    @*Generates random data. One value per label ranging from 0-100*@
-    private List<double?> GetRandomData()
+
+    // Gets the actual macro data from the user's session (loaded from database)
+    // Returns carbs, protein, and fat values
+    private List<double?> GetUserMacroData()
     {
-        var data = new List<double?>();
-        for (var index = 0; index < dataLabelsCount; index++)
+        var data = new List<double?>
         {
-            data.Add(rnd.Next(0, 100));
-        }
+            (double?)Session.UserSession.Daily_Carbs,
+            (double?)Session.UserSession.Daily_Protein,
+            (double?)Session.UserSession.Daily_Fat
+        };
 
         return data;
     }
 
-    @*Assigns colours to each slice in the pie*@
-    private List<string> GetRandomBackgroundColors()
+
+    // Assigns predefined colors to each macro slice (Carbs, Protein, Fat)
+    private List<string> GetMacroBackgroundColors()
     {
         var colors = new List<string>();
-        for (var index = 0; index < dataLabelsCount; index++)
+        for (var index = 0; index < 3; index++) // 3 macros: carbs, protein, fat
         {
             colors.Add(backgroundColors![index]);
         }
@@ -329,38 +359,13 @@
         return colors;
     }
 
-    @*Generates labels and keeps dataLabelsCount in sync so data and colours align*@
-    private List<string> GetDefaultDataLabels(int numberOfLabels)
+
+    // Generates the three macro labels: Carbs, Protein, Fats
+    private List<string> GetMacroLabels()
     {
-        var labels = new List<string>();
-        for (var index = 0; index < numberOfLabels; index++)
-        {
-            labels.Add(GetNextDataLabel());
-            dataLabelsCount += 1;
-        }
-
-        return labels;
+        dataLabelsCount = 3; // Reset to 3 for the three macros
+        return new List<string> { "Carbs", "Protein", "Fats" };
     }
-
-
-    private string Macro(int num)
-    {
-        switch (num)
-        {
-            case 0:
-                return "Carbs";
-
-            case 1:
-                return "Protein";
-            default:
-                return "Fats";
-        }
-    }
-
-
-    private string GetNextDataLabel() => $"{Macro(dataLabelsCount)}";
-
-    private string GetNextDataBackgrounfColor() => backgroundColors![dataLabelsCount];
 
     #endregion  Data Preparation
 
@@ -368,45 +373,45 @@
     #region Arrays of quotes
     private string[] GeneralHealthQuotes = new string[5]
     {
-    "You can, you should, and if you're brave enough to start, you will.",
-    "The only person who can stop you from reaching your goals is you.",
-    "Motivation is what gets you started. Habit is what keeps you going.",
-    "If you're tired of starting over—quit giving up.",
-    "It isn't the mountains ahead to climb that wears you out; it's the pebble in your shoe."
+        "You can, you should, and if you're brave enough to start, you will.",
+        "The only person who can stop you from reaching your goals is you.",
+        "Motivation is what gets you started. Habit is what keeps you going.",
+        "If you're tired of starting over—quit giving up.",
+        "It isn't the mountains ahead to climb that wears you out; it's the pebble in your shoe."
     };
 
     private string[] HypertrophyQuotes = new string[5]
     {
-    "Success isn't always about 'greatness', it's about consistency. Consistent, hard work gains success. Greatness will come.",
-    "All progress takes place outside the comfort zone.",
-    "Going to the gym is great for your body, but it's also great for your mind.",
-    "Know that you can start late, look different, be uncertain, and still succeed.",
-    "Lightweight, Baby!"
+        "Success isn't always about 'greatness', it's about consistency. Consistent, hard work gains success. Greatness will come.",
+        "All progress takes place outside the comfort zone.",
+        "Going to the gym is great for your body, but it's also great for your mind.",
+        "Know that you can start late, look different, be uncertain, and still succeed.",
+        "Lightweight, Baby!"
     };
 
     private string[] EnduranceQuotes = new string[5]
     {
-    "Sometimes, carrying on, just carrying on, is the superhuman achievement.",
-    "Overpower. Overtake. Overcome.",
-    "Erase the word 'failure' from your vocabulary. No case is ever truly closed, and no challenge is ever over.",
-    "If you run, you are a runner. It doesn't matter how fast or how far. It doesn't matter if today is your first day or if you've been running for 20 years. There is no test to pass, no license to earn, no membership card to get. You just run.",
-    "When I feel tired, I just think about how great I will feel once I finally reach my goal."
+        "Sometimes, carrying on, just carrying on, is the superhuman achievement.",
+        "Overpower. Overtake. Overcome.",
+        "Erase the word 'failure' from your vocabulary. No case is ever truly closed, and no challenge is ever over.",
+        "If you run, you are a runner. It doesn't matter how fast or how far. It doesn't matter if today is your first day or if you've been running for 20 years. There is no test to pass, no license to earn, no membership card to get. You just run.",
+        "When I feel tired, I just think about how great I will feel once I finally reach my goal."
     };
 
     private string[] FatLossQuotes = new string[5]
     {
-    "The hardest thing about exercise is to start doing it. Once you are doing exercise regularly, the hardest thing is to stop it.",
-    "Take care of your body. It's the one place you have to live.",
-    "An early morning walk is a blessing for the whole day.",
-    "It's going to be a journey. It's not a sprint to get in shape.",
-    "It's not so much that I began to run, but that I continued."
+        "The hardest thing about exercise is to start doing it. Once you are doing exercise regularly, the hardest thing is to stop it.",
+        "Take care of your body. It's the one place you have to live.",
+        "An early morning walk is a blessing for the whole day.",
+        "It's going to be a journey. It's not a sprint to get in shape.",
+        "It's not so much that I began to run, but that I continued."
     };
     #endregion
 
     private Random random = new Random();
 
     private string NewQuote(string[] quotes)
-    {       
+    {
         return quotes[random.Next(0, 5)];
     }
 
