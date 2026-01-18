@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WebsiteFirstDraft.Data.Models;
+using WebsiteFirstDraft.Data.DatabaseTableModels;
 
 namespace WebsiteFirstDraft.Components.Pages.Exercise
 {

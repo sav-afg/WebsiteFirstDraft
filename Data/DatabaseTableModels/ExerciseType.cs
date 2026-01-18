@@ -1,4 +1,4 @@
-﻿namespace WebsiteFirstDraft.Data.Models
+﻿namespace WebsiteFirstDraft.Data.DatabaseTableModels
 {
     public class ExerciseType
     {

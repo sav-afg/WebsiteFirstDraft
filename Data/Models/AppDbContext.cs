@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
+using WebsiteFirstDraft.Data.DatabaseTableModels;
 
 namespace WebsiteFirstDraft.Data.Models
 {

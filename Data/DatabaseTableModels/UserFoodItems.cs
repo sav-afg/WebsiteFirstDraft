@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebsiteFirstDraft.Data.Models
+namespace WebsiteFirstDraft.Data.DatabaseTableModels
 {
     // Table to link users with their food items
     public class UserFoodItems

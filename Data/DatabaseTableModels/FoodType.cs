@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace WebsiteFirstDraft.Data.Models
+namespace WebsiteFirstDraft.Data.DatabaseTableModels
 {
     public class FoodType
     {

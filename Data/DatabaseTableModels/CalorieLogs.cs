@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using WebsiteFirstDraft.Components.Pages.Diet_Food;
 
-namespace WebsiteFirstDraft.Data.Models
+namespace WebsiteFirstDraft.Data.DatabaseTableModels
 {
     // Represents a log entry for calorie tracking. New table on SQL Server. Required for graphs to work
     public class CalorieLogs
