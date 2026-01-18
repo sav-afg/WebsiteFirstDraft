@@ -3,6 +3,8 @@
 @inject NavigationManager Navigation
 @rendermode InteractiveServer
 @inject MaintenanceCalorieCalculator Calc
+@inject UserSessionService Session
+@inject AppDbContext Db
 
 @using Microsoft.AspNetCore.Components.Forms
 
@@ -221,7 +223,7 @@
         Calc.WeightKg <= 0 ||
         Calc.Age <= 0;
 
-  
+
     // mCalculates maintenance calories and displays results
     private void CalculateCalories()
     {
@@ -231,9 +233,20 @@
             return;
         }
 
+        var user = Db.Users.FirstOrDefault(u => u.Username == Session.UserSession.Username);
+
         // Perform calculations
         bmr = Calc.CalculateBMR();
         tdee = Calc.CalculateTDEE();
+
+        // Save results to user profile if logged in
+        if (user != null)
+        {
+            user.Maintenance_Calories = (int)tdee;
+            user.Body_Weight = (int)Calc.WeightKg;
+            Db.SaveChanges();
+        }
+
 
         // Show results
         showResults = true;

@@ -15,7 +15,8 @@ namespace WebsiteFirstDraft.Data.Models
         // Creates the new database table
         public DbSet<CalorieLogs> Calorie_Logs => Set<CalorieLogs>();
 
-    
+        public DbSet<UserFoodItems> users_food_items => Set<UserFoodItems>();
+
         // DbSet representing the food_types table in the database
         public DbSet<FoodType> Food_items => Set<FoodType>();
 
@@ -43,6 +44,24 @@ namespace WebsiteFirstDraft.Data.Models
 
                 entity.Property(e => e.IntensityLevel)
                         .HasColumnName("intensity");
+            });
+
+            // Configure UserFoodItems table
+            modelBuilder.Entity<UserFoodItems>(entity =>
+            {
+                entity.ToTable("users_food_items");
+                entity.HasKey(e => e.UsersFoodItemId);
+
+                // Configure relationships
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserId)
+                      .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.FoodType)
+                      .WithMany()
+                      .HasForeignKey(e => e.FoodId)
+                      .OnDelete(DeleteBehavior.Cascade);
             });
         }
 

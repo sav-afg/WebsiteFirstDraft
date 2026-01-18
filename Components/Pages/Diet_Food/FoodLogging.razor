@@ -3,6 +3,7 @@
 @inject NavigationManager NavigationManager
 @inject WebsiteFirstDraft.Data.Models.AppDbContext Db
 @inject UserSessionService Session
+@* @inject UserFoodItems UserFoodItems *@
 @using WebsiteFirstDraft.Data
 @using WebsiteFirstDraft.Data.Models
 @using BlazorBootstrap.Components
@@ -322,6 +323,15 @@
             user.Weekly_Protein = Session.UserSession.Weekly_Protein;
             user.Weekly_Fat = Session.UserSession.Weekly_Fat;
 
+            // Selects the food item from the database based on its nutritional values
+            var food = Db.Food_items
+                .FirstOrDefault(f => f.Calories_Per_Gram == caloriesPerGram &&
+                                     f.Carbs_Per_Gram == carbsPerGram &&
+                                     f.Protein_Per_Gram == proteinPerGram &&
+                                     f.Fat_Per_Gram == fatPerGram);
+
+            LogUserFoodItem(user, food);
+
             Db.SaveChanges();
 
             errorMessage = "Food logged successfully!";
@@ -337,7 +347,43 @@
         }
 
 
-        
 
+
+    }
+
+    private void LogUserFoodItem(User? user, FoodType? food)     
+    {
+        if (user == null)
+        {
+            System.Console.WriteLine("Error: User is null in LogUserFoodItem");
+            errorMessage = "Error: User information is missing.";
+            return;
+        }
+
+        if (food == null)
+        {
+            System.Console.WriteLine("Error: Food is null in LogUserFoodItem");
+            errorMessage = "Error: Food item information is missing.";
+            return;
+        }
+
+        try
+        {
+            var userFoodItem = new UserFoodItems 
+            {
+                UserId = user.User_id,
+                FoodId = food.Food_Id
+
+            };
+
+            Db.users_food_items.Add(userFoodItem);
+            
+            System.Console.WriteLine($"Added UserFoodItem: UserId={user.User_id}, FoodId={food.Food_Id}");
+        }
+        catch (Exception ex)
+        {
+            System.Console.WriteLine($"Error in LogUserFoodItem: {ex.Message}");
+            errorMessage = $"Error linking food item: {ex.Message}";
+        }
     }
 }
