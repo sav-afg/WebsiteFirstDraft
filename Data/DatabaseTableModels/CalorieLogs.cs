@@ -15,7 +15,7 @@ namespace WebsiteFirstDraft.Data.DatabaseTableModels
         public int User_id { get; set; } 
 
         [Required]
-        public DateTime Log_Date { get; set; }
+        public DateTime Log_Date { get; set; } = DateTime.Now;
 
         // Nullable integer for calories consumed
         public int? Calories_Consumed { get; set; }
@@ -23,7 +23,14 @@ namespace WebsiteFirstDraft.Data.DatabaseTableModels
         
         public int? Calories_Burned { get; set; }
 
-        [Required]
-        public int Net_Calories { get; set; }
+        
+        public int Net_Calories {  get; set; }
+
+        //// Navigation Properties
+
+        //public required User User { get; set; }
+        //public FoodType? FoodType { get; set; }
+
+        //public ExerciseType? ExerciseType { get; set; }
     }
 }

@@ -333,7 +333,6 @@
 
             LogUserFoodItem(user, food);
 
-            Db.SaveChanges();
 
             errorMessage = "Food logged successfully!";
             showPopup = false;
@@ -368,6 +367,7 @@
             return;
         }
 
+
         try
         {
             var userFoodItem = new UserFoodItems 
@@ -378,8 +378,19 @@
             };
 
             Db.users_food_items.Add(userFoodItem);
-            
+
             System.Console.WriteLine($"Added UserFoodItem: UserId={user.User_id}, FoodId={food.Food_Id}");
+
+            var calorieLog = new CalorieLogs
+                {
+                    User_id = user.User_id,
+                    Calories_Consumed = (int)calories,
+                    Net_Calories = (int)calories
+                };
+
+            Db.Calorie_Logs.Add(calorieLog);
+            Db.SaveChanges();
+            System.Console.WriteLine($"Added CalorieLog: UserId={user.User_id}, FoodId={food.Food_Id}, Calories_Consumed={(int)calories}");
         }
         catch (Exception ex)
         {

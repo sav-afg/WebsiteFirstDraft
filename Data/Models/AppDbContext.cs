@@ -20,6 +20,7 @@ namespace WebsiteFirstDraft.Data.Models
 
         public DbSet<UserFoodItems> users_food_items => Set<UserFoodItems>();
 
+
         // DbSet representing the food_types table in the database
         public DbSet<FoodType> Food_items => Set<FoodType>();
 

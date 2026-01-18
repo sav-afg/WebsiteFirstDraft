@@ -233,6 +233,19 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
 
                 Db.users_exercises.Add(userExercise);
 
+                // Negative entry to represent burnt calories
+                var calorieLog = new CalorieLogs
+                {
+                    User_id = user.User_id,
+                    Calories_Burned = (int)caloriesBurnt,
+                    Net_Calories = -(int)caloriesBurnt
+                };
+
+                Db.Calorie_Logs.Add(calorieLog);
+                Db.SaveChanges();
+
+                System.Console.WriteLine($"Added CalorieLog: UserId={user.User_id}, FoodId={exercise.Id}, Calories_Consumed={(int)caloriesBurnt}");
+
                 System.Console.WriteLine($"Added UserExercise: UserId={user.User_id}, ExerciseId={exercise.Id}");
             }
             catch (Exception ex)
