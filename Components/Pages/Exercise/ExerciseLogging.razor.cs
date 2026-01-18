@@ -179,9 +179,14 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
                 user.Daily_Calories -= Session.UserSession.Daily_Calories;
                 user.Weekly_Calories -= Session.UserSession.Weekly_Calories;
 
+                var exercise = Db.exercise_types
+                    .FirstOrDefault(e => e.CaloriesBurnedPerMinute.ToString() == rate);
+
+                LogUserExercise(user, exercise);
+
                 Db.SaveChanges();
 
-                errorMessage = "Food logged successfully!";
+                errorMessage = "exercise logged successfully!";
                 showPopup = false;
                 display = false;
                 StateHasChanged();
@@ -189,13 +194,52 @@ namespace WebsiteFirstDraft.Components.Pages.Exercise
             // Catches any exceptions that occur during the database update
             catch (Exception ex)
             {
-                errorMessage = $"Error logging food item: {ex.Message}";
+                errorMessage = $"Error logging exercise: {ex.Message}";
                 StateHasChanged();
             }
 
 
 
 
+        }
+
+        // Logs the association between a user and an exercise in the UserExercises table
+        private void LogUserExercise(User? user, ExerciseType? exercise)
+        {
+            if (user == null)
+            {
+                System.Console.WriteLine("Error: User is null in LogUserExercise");
+                errorMessage = "Error: User information is missing.";
+                return;
+            }
+
+            if (exercise == null)
+            {
+                System.Console.WriteLine("Error: exercise is null in LogUserExercise");
+                errorMessage = "Error: exercise information is missing.";
+                return;
+            }
+
+            try
+            {
+                var userExercise = new UserExercises
+                {
+                    UserId = user.User_id,
+                    ExerciseId = exercise.Id,
+                    User = user,
+                    Exercise = exercise,
+                    DateAdded = DateTime.UtcNow
+                };
+
+                Db.users_exercises.Add(userExercise);
+
+                System.Console.WriteLine($"Added UserExercise: UserId={user.User_id}, ExerciseId={exercise.Id}");
+            }
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error in LogUserExercise: {ex.Message}");
+                errorMessage = $"Error linking exercise: {ex.Message}";
+            }
         }
     }
 
